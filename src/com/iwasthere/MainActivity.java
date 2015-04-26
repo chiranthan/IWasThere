@@ -47,10 +47,12 @@ public class MainActivity extends Activity {
 		locationList = (ListView)findViewById(R.id.locsList);
 		markLocation = (ImageView)findViewById(R.id.mark);
 		markLocation.setEnabled(false);
+		markLocation.setVisibility(View.GONE);
 		location.setLatitude(0);
 		location.setLongitude(0);
 		Cursor cursor = getLocations();
 	    showLocs(cursor);
+	    locationList.setEnabled(false);
 		locationList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
 			@Override
@@ -149,10 +151,40 @@ public class MainActivity extends Activity {
 	}
 	
 	public void clearLocations(View view){
-		SQLiteDatabase db = locsData.getReadableDatabase();
-		db.delete(MySQLiteHelper.TABLE, null, null);
-		Cursor cursor = getLocations();
-	    showLocs(cursor);
+		AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+				context);
+ 
+			// set title
+			alertDialogBuilder.setTitle("Your Title");
+ 
+			// set dialog message
+			alertDialogBuilder
+				.setMessage("Sure?! All locations will be forgotten")
+				.setCancelable(false)
+				.setPositiveButton("Yes",new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog,int id) {
+						// if this button is clicked, close
+						// current activity
+						SQLiteDatabase db = locsData.getReadableDatabase();
+						db.delete(MySQLiteHelper.TABLE, null, null);
+						Cursor cursor = getLocations();
+					    showLocs(cursor);
+					}
+				  })
+				.setNegativeButton("No",new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog,int id) {
+						// if this button is clicked, just close
+						// the dialog box and do nothing
+						dialog.cancel();
+					}
+				});
+ 
+				// create alert dialog
+				AlertDialog alertDialog = alertDialogBuilder.create();
+ 
+				// show it
+				alertDialog.show();
+		
 	}
 	
 	private void findLocation(String latitude, String longitude){
@@ -171,7 +203,9 @@ public class MainActivity extends Activity {
 		  		//if location of device changes
 	  	 		txtgps.setText("Current Location:\n" + loc.getLatitude() + "\n" + loc.getLongitude());
 	  	 		currLoc.set(loc);
+	  	 		markLocation.setVisibility(View.VISIBLE);
 	  	 		markLocation.setEnabled(true);
+	  	 		locationList.setEnabled(true);
 	  	 	}
 	  	 	@Override
 	   	    public void onProviderDisabled(String provider) {
